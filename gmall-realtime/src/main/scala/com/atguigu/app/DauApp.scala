@@ -44,6 +44,8 @@ object DauApp {
       log
     }
 
+    startLogDStream.print()
+
     //5.跨批次去重
 
     //6.同批次去重
@@ -51,6 +53,7 @@ object DauApp {
     //7.将数据保存至Redis,以供下一次去重使用
 
     //8.有效数据(不做计算)写入HBase
+
 
     //启动任务
     ssc.start()
