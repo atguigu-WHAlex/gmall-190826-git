@@ -6,10 +6,13 @@ import java.util.Date
 import com.alibaba.fastjson.JSON
 import com.atguigu.bean.StartUpLog
 import com.atguigu.constants.GmallConstants
+import com.atguigu.handler.DauHandler
 import com.atguigu.utils.MyKafkaUtil
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.dstream.{DStream, InputDStream}
+import org.apache.phoenix.spark._
 
 object DauApp {
 
@@ -19,7 +22,7 @@ object DauApp {
     val sparkConf: SparkConf = new SparkConf().setMaster("local[*]").setAppName("TestKafka")
 
     //2.创建StreamingContext
-    val ssc = new StreamingContext(sparkConf, Seconds(5))
+    val ssc = new StreamingContext(sparkConf, Seconds(3))
 
     //3.读取Kafka数据创建DStream
     val kafkaDStream: InputDStream[(String, String)] = MyKafkaUtil.getKafkaStream(ssc, Set(GmallConstants.GMALL_STARTUP_TOPIC))
@@ -44,16 +47,26 @@ object DauApp {
       log
     }
 
-    startLogDStream.print()
+    //5.跨批次去重(根据Redis中的数据进行去重)
+    val filterByRedis: DStream[StartUpLog] = DauHandler.filterDataByRedis(startLogDStream)
 
-    //5.跨批次去重
+    filterByRedis.cache()
 
     //6.同批次去重
+    val filterByBatch: DStream[StartUpLog] = DauHandler.filterDataByBatch(filterByRedis)
+    filterByBatch.cache()
 
     //7.将数据保存至Redis,以供下一次去重使用
+    DauHandler.saveMidToRedis(filterByBatch)
 
-    //8.有效数据(不做计算)写入HBase
+    //测试
+    //    filterByRedis.count().print()
+    filterByBatch.count().print()
 
+    //8.有效数据(不做计算)写入HBase(Phoenix)
+    filterByBatch.foreachRDD(rdd =>
+      rdd.saveToPhoenix("GMALL190826_DAU", Seq("MID", "UID", "APPID", "AREA", "OS", "CH", "TYPE", "VS", "LOGDATE", "LOGHOUR", "TS"), new Configuration, Some("hadoop102,hadoop103,hadoop104:2181"))
+    )
 
     //启动任务
     ssc.start()
