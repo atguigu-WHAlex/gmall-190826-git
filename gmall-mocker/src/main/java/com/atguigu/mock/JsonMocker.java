@@ -17,9 +17,7 @@ public class JsonMocker {
 
     private int startupNum = 100000;
     int eventNum = 200000;
-
     private RandomDate logDateUtil = null;
-
 
     private RanOpt[] osOpts = {new RanOpt("ios", 3), new RanOpt("andriod", 7)};
     private RandomOptionGroup<String> osOptionGroup = new RandomOptionGroup(osOpts);
@@ -42,7 +40,7 @@ public class JsonMocker {
 
     private RandomOptionGroup<String> vsOptionGroup = new RandomOptionGroup(vsOpts);
 
-    private RanOpt[] eventOpts = {new RanOpt("addFavor", 10), new RanOpt("addComment", 30),new RanOpt("addCart", 20), new RanOpt("clickItem", 40), new RanOpt("coupon", 45)};
+    private RanOpt[] eventOpts = {new RanOpt("addFavor", 10), new RanOpt("addComment", 30), new RanOpt("addCart", 20), new RanOpt("clickItem", 40), new RanOpt("coupon", 45)};
 
     private RandomOptionGroup<String> eventOptionGroup = new RandomOptionGroup(eventOpts);
 
@@ -152,7 +150,7 @@ public class JsonMocker {
                 jsonMocker.sendLog(eventLog);
             }
             try {
-                Thread.sleep(20);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
