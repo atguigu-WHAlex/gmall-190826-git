@@ -69,7 +69,6 @@ public class CanalClient {
 
                 //创建JSON对象，用于存放一行数据
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("tableName", tableName);
 
                 //获取变化后的数据并遍历
                 for (CanalEntry.Column column : rowData.getAfterColumnsList()) {
