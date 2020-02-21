@@ -1,9 +1,12 @@
 package com.atguigu.client;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
+import com.atguigu.constants.GmallConstants;
+import com.atguigu.utils.KafkaSender;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.net.InetSocketAddress;
@@ -19,12 +22,10 @@ public class CanalClient {
 
         //抓取数据并解析
         while (true) {
-
             //连接Canal
             canalConnector.connect();
             //指定订阅的数据库
             canalConnector.subscribe("gmall.*");
-
             //抓取数据
             Message message = canalConnector.get(100);
 
@@ -60,7 +61,25 @@ public class CanalClient {
     //处理数据，发送至Kafka
     private static void handler(String tableName, CanalEntry.EventType eventType, CanalEntry.RowChange rowChange) {
 
+        //订单表并且是下单数据
+        if ("order_info".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType)) {
 
+            //遍历RowDatasList
+            for (CanalEntry.RowData rowData : rowChange.getRowDatasList()) {
+
+                //创建JSON对象，用于存放一行数据
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("tableName", tableName);
+
+                //获取变化后的数据并遍历
+                for (CanalEntry.Column column : rowData.getAfterColumnsList()) {
+                    jsonObject.put(column.getName(), column.getValue());
+                }
+
+                //发送至Kafka
+                System.out.println(jsonObject.toString());
+                KafkaSender.send(GmallConstants.GMALL_ORDER_INFO_TOPIC, jsonObject.toString());
+            }
+        }
     }
-
 }
