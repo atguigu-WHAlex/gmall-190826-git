@@ -7,7 +7,7 @@ import java.util.Date
 import com.alibaba.fastjson.JSON
 import com.atguigu.bean.{CouponAlertInfo, EventLog}
 import com.atguigu.constants.GmallConstants
-import com.atguigu.utils.MyKafkaUtil
+import com.atguigu.utils.{MyEsUtil, MyKafkaUtil}
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.dstream.{DStream, InputDStream}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
@@ -44,7 +44,7 @@ object AlterApp {
       log
     }
 
-    //根据条件产生预警日志：同一设备，30秒内三次及以上用不同账号登录并领取优惠劵，并且在登录到领劵过程中没有浏览商品。
+    //根据条件产生预警日志：同一设备，30秒内三次及以上用不同账号登录并领取优惠劵，并且过程中没有浏览商品。
 
     //5.开窗30秒 -> 30秒内
     val windowEventLogDStream: DStream[EventLog] = eventLogDStream.window(Seconds(30))
@@ -88,9 +88,29 @@ object AlterApp {
     }
 
     //8.过滤出真正的预警日志
-    boolToAlterInfoDStream.filter(_._1)
-      .map(_._2)
-      .print()
+    val alertInfoDStream: DStream[CouponAlertInfo] = boolToAlterInfoDStream.filter(_._1).map(_._2)
+
+    //9.转换数据结构->（id,CouponAlertInfo）
+    val minToAlertInfoDStream: DStream[(String, CouponAlertInfo)] = alertInfoDStream.map(log => {
+
+      //获取时间戳
+      val ts: Long = log.ts
+
+      //获取分钟数
+      val min: Long = ts / 1000 / 60
+
+      (log.mid + min.toString, log)
+    })
+
+    //10.将数据写入ES
+    minToAlertInfoDStream.foreachRDD(rdd => {
+
+      //对分区写
+      rdd.foreachPartition(midToLogIter => {
+        MyEsUtil.insertBulk(GmallConstants.GMALL_ALERT_INFO_INDEX
+          , midToLogIter.toList)
+      })
+    })
 
     //启动任务
     ssc.start()
