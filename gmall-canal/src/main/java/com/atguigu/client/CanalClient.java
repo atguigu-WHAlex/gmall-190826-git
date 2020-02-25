@@ -64,21 +64,35 @@ public class CanalClient {
         //订单表并且是下单数据
         if ("order_info".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType)) {
 
-            //遍历RowDatasList
-            for (CanalEntry.RowData rowData : rowChange.getRowDatasList()) {
+            //将数据写入订单信息主题
+            sendToKafka(rowChange, GmallConstants.GMALL_ORDER_INFO_TOPIC);
 
-                //创建JSON对象，用于存放一行数据
-                JSONObject jsonObject = new JSONObject();
+        } else if ("order_detail".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType
+        )) {
 
-                //获取变化后的数据并遍历
-                for (CanalEntry.Column column : rowData.getAfterColumnsList()) {
-                    jsonObject.put(column.getName(), column.getValue());
-                }
+            //将数据写入订单详情主题
+            sendToKafka(rowChange, GmallConstants.GMALL_ORDER_DETAIL_TOPIC);
 
-                //发送至Kafka
-                System.out.println(jsonObject.toString());
-                KafkaSender.send(GmallConstants.GMALL_ORDER_INFO_TOPIC, jsonObject.toString());
+        } else if ("user_info".equals(tableName) && (CanalEntry.EventType.INSERT.equals(eventType) || CanalEntry.EventType.UPDATE.equals(eventType))) {
+
+            //将数据写入订单用户主题
+            sendToKafka(rowChange, GmallConstants.GMALL_USER_INFO_TOPIC);
+        }
+    }
+
+    //将数据发送之Kafka
+    private static void sendToKafka(CanalEntry.RowChange rowChange, String topic) {
+        //遍历RowDatasList
+        for (CanalEntry.RowData rowData : rowChange.getRowDatasList()) {
+            //创建JSON对象，用于存放一行数据
+            JSONObject jsonObject = new JSONObject();
+            //获取变化后的数据并遍历
+            for (CanalEntry.Column column : rowData.getAfterColumnsList()) {
+                jsonObject.put(column.getName(), column.getValue());
             }
+            //发送至Kafka
+            System.out.println(jsonObject.toString());
+            KafkaSender.send(topic, jsonObject.toString());
         }
     }
 }
