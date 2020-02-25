@@ -67,7 +67,7 @@ object MyEsUtil {
         bulkBuilder.addAction(index)
       }
       val bulk: Bulk = bulkBuilder.build()
-      var items: util.List[BulkResult#BulkResultItem] = null
+      var items: java.util.List[BulkResult#BulkResultItem] = null
       try {
         items = jest.execute(bulkBuilder.build()).getItems
       } catch {
@@ -75,6 +75,8 @@ object MyEsUtil {
       } finally {
         close(jest)
         println("保存" + items.size() + "条数据")
+
+
         for (item <- items) {
           if (item.error != null && item.error.nonEmpty) {
             println(item.error)

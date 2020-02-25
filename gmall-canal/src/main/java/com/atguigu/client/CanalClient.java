@@ -11,6 +11,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Random;
 
 //读取Canal数据，解析之后发送到Kafka
 public class CanalClient {
@@ -66,15 +67,11 @@ public class CanalClient {
 
             //将数据写入订单信息主题
             sendToKafka(rowChange, GmallConstants.GMALL_ORDER_INFO_TOPIC);
-
         } else if ("order_detail".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType
         )) {
-
             //将数据写入订单详情主题
             sendToKafka(rowChange, GmallConstants.GMALL_ORDER_DETAIL_TOPIC);
-
         } else if ("user_info".equals(tableName) && (CanalEntry.EventType.INSERT.equals(eventType) || CanalEntry.EventType.UPDATE.equals(eventType))) {
-
             //将数据写入订单用户主题
             sendToKafka(rowChange, GmallConstants.GMALL_USER_INFO_TOPIC);
         }
@@ -92,6 +89,11 @@ public class CanalClient {
             }
             //发送至Kafka
             System.out.println(jsonObject.toString());
+            try {
+                Thread.sleep(new Random().nextInt(5) * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             KafkaSender.send(topic, jsonObject.toString());
         }
     }
