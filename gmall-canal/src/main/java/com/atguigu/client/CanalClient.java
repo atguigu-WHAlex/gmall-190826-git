@@ -90,7 +90,7 @@ public class CanalClient {
             //发送至Kafka
             System.out.println(jsonObject.toString());
             try {
-                Thread.sleep(new Random().nextInt(5) * 1000);
+                Thread.sleep(new Random().nextInt(2) * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -1,21 +1,21 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title></title>
     <!-- Bootstrap Styles-->
-    <link href="assets/css/bootstrap.css" rel="stylesheet" />
+    <link href="assets/css/bootstrap.css" rel="stylesheet"/>
     <!-- FontAwesome Styles-->
-    <link href="assets/css/font-awesome.css" rel="stylesheet" />
+    <link href="assets/css/font-awesome.css" rel="stylesheet"/>
     <!-- Morris Chart Styles-->
 
     <!-- Custom Styles-->
-    <link href="assets/css/custom-styles.css" rel="stylesheet" />
+    <link href="assets/css/custom-styles.css" rel="stylesheet"/>
     <!-- Google Fonts-->
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'/>
     <!-- TABLE STYLES-->
-    <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet" />
+    <link href="assets/js/dataTables/dataTables.bootstrap.css" rel="stylesheet"/>
     <!-- JS Scripts-->
     <!-- jQuery Js -->
     <script src="assets/js/jquery-1.10.2.js"></script>
@@ -29,13 +29,14 @@
 
 
     <!--日期插件-->
-    <link href="assets/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+    <link href="assets/css/bootstrap-datetimepicker.min.css" rel="stylesheet"/>
     <script src="assets/js/bootstrap-datetimepicker.min.js"></script>
     <script src="assets/js/echarts.min.js"></script>
     <script type="text/javascript">
         function submitCondition() {
             $("#dataTables-example").DataTable().ajax.reload();
         }
+
         $(document).ready(function () {
             showAnalysis1();
             showAnalysis2();
@@ -49,12 +50,12 @@
                 startView: 2,
                 minView: 2,  //Number, String. 默认值：0, 'hour'，日期时间选择器所能够提供的最精确的时间选择视图。
 
-                clearBtn:true,//清除按钮
+                clearBtn: true,//清除按钮
 
                 forceParse: 0
             });
 
-            $("#blrz-entry-date-start").on('change',function(){
+            $("#blrz-entry-date-start").on('change', function () {
                 var thisEntryDate = $("#blrz-entry-date-start").val();
 
             });
@@ -65,13 +66,13 @@
                 "serverSide": true,//服务器端获取数据
                 "paging": true,//开启分页
                 lengthMenu: [ //自定义分页长度
-                    [ 10,20,50,100 ],
-                    [ '10页','20 页', '50 页', '100页' ]
+                    [5, 10, 20, 50, 100],
+                    ['5条', '10条', '20 条', '50 条', '100条']
                 ],
                 "ajax": {
                     "url": "getData",
                     "dataSrc": "data",
-                    "dataType" : "text",
+                    "dataType": "text",
                     "data": function (d) {
                         //alert(d)
                         /*for(var key in d){
@@ -86,7 +87,7 @@
                     },
                     "dataFilter": function (data) {//json是服务器端返回的数据
                         //alert(data)
-                        var json = eval('('+data+')');
+                        var json = eval('(' + data + ')');
                         //alert(json)
                         showAnalysis1(json.data.stat[1].options)
                         showAnalysis2(json.data.stat[0].options)
@@ -109,34 +110,34 @@
                         return returnData;//这几个参数都是datatable需要的，必须要
                     }
                 },
-                "oLanguage" : { // 国际化配置
-                    "sProcessing" : "正在获取数据，请稍后...",
-                    "sLengthMenu" : "显示 _MENU_ 条",
-                    "sZeroRecords" : "没有找到数据",
-                    "sInfo" : "从 _START_ 到  _END_ 条记录 总记录数为 _TOTAL_ 条",
-                    "sInfoEmpty" : "记录数为0",
-                    "sInfoFiltered" : "(全部记录数 _MAX_ 条)",
-                    "sInfoPostFix" : "",
-                    "sUrl" : "",
-                    "oPaginate" : {
-                        "sFirst" : "第一页",
-                        "sPrevious" : "上一页",
-                        "sNext" : "下一页",
-                        "sLast" : "最后一页"
+                "oLanguage": { // 国际化配置
+                    "sProcessing": "正在获取数据，请稍后...",
+                    "sLengthMenu": "显示 _MENU_ 页",
+                    "sZeroRecords": "没有找到数据",
+                    "sInfo": "从 _START_ 到  _END_ 条记录 总记录数为 _TOTAL_ 条",
+                    "sInfoEmpty": "记录数为0",
+                    "sInfoFiltered": "(全部记录数 _MAX_ 条)",
+                    "sInfoPostFix": "",
+                    "sUrl": "",
+                    "oPaginate": {
+                        "sFirst": "第一页",
+                        "sPrevious": "上一页",
+                        "sNext": "下一页",
+                        "sLast": "最后一页"
                     }
                 },
                 "columns": [
-                    { "data": "order_detail_id" },
-                    { "data": "order_id" },
-                    { "data": "user_id" },
-                    { "data": "sku_id" },
-                    { "data": "user_gender" },
-                    { "data": "user_age" },
-                    { "data": "user_level" },
-                    { "data": "sku_price" },
-                    { "data": "sku_name" },
-                    { "data": "sku_tm_id" },
-                    { "data": "dt" }
+                    {"data": "order_detail_id"},
+                    {"data": "order_id"},
+                    {"data": "user_id"},
+                    {"data": "sku_id"},
+                    {"data": "user_gender"},
+                    {"data": "user_age"},
+                    {"data": "user_level"},
+                    {"data": "sku_price"},
+                    {"data": "sku_name"},
+                    {"data": "sku_tm_id"},
+                    {"data": "dt"}
                 ]
             })
         })
@@ -146,28 +147,28 @@
             var myChart = echarts.init(document.getElementById('main1'));
             console.log(json)
             //var group = json.data.stat[1].options;
-            var option=({
-                title : {
-                    text: '男女比例数据分析',
+            var option = ({
+                title: {
+                    text: '年龄比例数据分析',
                     subtext: '尚硅谷',
-                    x:'center'
+                    x: 'center'
                 },
-                tooltip : {
+                tooltip: {
                     trigger: 'item',
                     formatter: "{a} <br/>{b} : {c} ({d}%)"
                 },
                 legend: {
                     orient: 'vertical',
                     left: 'left',
-                    data: ['男','女']
+                    data: ['男', '女']
                 },
-                series : [
+                series: [
                     {
                         name: '占比',
                         type: 'pie',
-                        radius : '55%',
+                        radius: '55%',
                         center: ['50%', '60%'],
-                        data:json,
+                        data: json,
                         itemStyle: {
                             emphasis: {
                                 shadowBlur: 10,
@@ -218,31 +219,32 @@
                 }
             })*/
         }
+
         function showAnalysis2(json) {
             var myChart = echarts.init(document.getElementById('main2'));
             //var group = json.data.stat[1].options;
-            var option=({
-                title : {
-                    text: '年龄比例数据分析',
+            var option = ({
+                title: {
+                    text: '男女比例数据分析',
                     subtext: '尚硅谷',
-                    x:'center'
+                    x: 'center'
                 },
-                tooltip : {
+                tooltip: {
                     trigger: 'item',
                     formatter: "{a} <br/>{b} : {c} ({d}%)"
                 },
                 legend: {
                     orient: 'vertical',
                     left: 'left',
-                    data: ['20岁以下','20-30岁','30岁以上']
+                    data: ['20岁以下', '20-30岁', '30岁以上']
                 },
-                series : [
+                series: [
                     {
                         name: '占比',
                         type: 'pie',
-                        radius : '55%',
+                        radius: '55%',
                         center: ['50%', '60%'],
-                        data:json,
+                        data: json,
                         itemStyle: {
                             emphasis: {
                                 shadowBlur: 10,
@@ -346,7 +348,7 @@
 
     </nav>
     <!-- /. NAV SIDE  -->
-    <div id="page-wrapper" >
+    <div id="page-wrapper">
         <div id="page-inner">
             <div class="row">
                 <div class="col-md-12">
@@ -360,7 +362,8 @@
                 <div class="col-md-12">
 
                     <ol class="breadcrumb">
-                        <li>日期&nbsp;&nbsp;<input  name="entryDate" placeholder="请选择入职日期" id="blrz-entry-date-start" type="text" ></li>
+                        <li>日期&nbsp;&nbsp;<input name="entryDate" placeholder="请选择查询日期" id="blrz-entry-date-start"
+                                                 type="text"></li>
                         <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             <select id="sel" hidden="hidden">
                                 <option value="1">level1</option>
@@ -374,8 +377,10 @@
                                 <option value="9">level9</option>
                                 <option value="10">level10</option>
                             </select>
-                        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;关键字&nbsp;&nbsp;<input  name="entryDate" id="tex" type="text" ></li>
-                        <li>&nbsp;&nbsp;&nbsp;&nbsp;<button id="sub" onclick="submitCondition()">查询</button></li>
+                        <li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;关键字&nbsp;&nbsp;<input
+                                name="entryDate" id="tex" type="text"></li>
+                        <li>&nbsp;&nbsp;&nbsp;&nbsp;<button id="sub" onclick="submitCondition()">查询</button>
+                        </li>
                         </li>
                     </ol>
                 </div>
