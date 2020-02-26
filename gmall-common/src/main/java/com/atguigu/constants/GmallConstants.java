@@ -20,4 +20,7 @@ public class GmallConstants {
     //定义预警日志的ES index
     public static final String GMALL_ALERT_INFO_INDEX = "gmall_coupon_alert";
 
+    //定义订单销售详情ES Index
+    public static final String GMALL_SALE_DETAIL_INDEX = "gmall190826_sale_detail";
+
 }

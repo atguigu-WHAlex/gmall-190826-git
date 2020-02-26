@@ -3,13 +3,13 @@ package com.atguigu.app
 import java.util
 
 import com.alibaba.fastjson.JSON
-import com.atguigu.bean.{OrderDetail, OrderInfo, SaleDetail}
+import com.atguigu.bean.{OrderDetail, OrderInfo, SaleDetail, UserInfo}
 import com.atguigu.constants.GmallConstants
-import com.atguigu.utils.{MyKafkaUtil, RedisUtil}
+import com.atguigu.utils.{MyEsUtil, MyKafkaUtil, RedisUtil}
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.dstream.{DStream, InputDStream}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.json4s.{DefaultFormats, Formats}
+import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization
 import redis.clients.jedis.Jedis
 
@@ -29,6 +29,22 @@ object SaleDetailApp {
     val orderInfoKafkaDStream: InputDStream[(String, String)] = MyKafkaUtil.getKafkaStream(ssc, Set(GmallConstants.GMALL_ORDER_INFO_TOPIC))
     val orderDetailKafkaDStream: InputDStream[(String, String)] = MyKafkaUtil.getKafkaStream(ssc, Set(GmallConstants.GMALL_ORDER_DETAIL_TOPIC))
     val userInfoKafkaDStream: InputDStream[(String, String)] = MyKafkaUtil.getKafkaStream(ssc, Set(GmallConstants.GMALL_USER_INFO_TOPIC))
+
+    //将用户数据缓存至Redis,为了后面跟订单数据结合使用
+    userInfoKafkaDStream.foreachRDD(rdd => {
+      //分区操作
+      rdd.foreachPartition(iter => {
+        //获取Redis连接
+        val jedisClient: Jedis = RedisUtil.getJedisClient
+        //写入Redis String=>userid->value
+        iter.foreach { case (_, value) =>
+          val userInfo: UserInfo = JSON.parseObject(value, classOf[UserInfo])
+          jedisClient.set(s"user:${userInfo.id}", value)
+        }
+        //释放连接
+        jedisClient.close()
+      })
+    })
 
     //4.将orderInfoKafkaDStream和orderDetailKafkaDStream中每一个元素转换为样例类对象
     val idToOrderInfoDStream: DStream[(String, OrderInfo)] = orderInfoKafkaDStream.map { case (_, value) =>
@@ -102,10 +118,10 @@ object SaleDetailApp {
 
           //查询Redis取出OrderInfo的数据
           if (jedisClient.exists(orderRedisKey)) {
+
             //Redis中存在OrderInfo,读取数据JOIN之后放入集合
             val orderJson: String = jedisClient.get(orderRedisKey)
             val orderInfo: OrderInfo = JSON.parseObject(orderJson, classOf[OrderInfo])
-
             list += new SaleDetail(orderInfo, orderDetail)
 
           } else {
@@ -122,8 +138,42 @@ object SaleDetailApp {
       list.toIterator
     })
 
+    //7.反查Redis,将用户信息补全
+    val details: DStream[SaleDetail] = orderInfoAndDetailDStream.mapPartitions(iter => {
+      //获取连接
+      val jedisClient: Jedis = RedisUtil.getJedisClient
+
+      val result: Iterator[SaleDetail] = iter.map(saleDetail => {
+        //查询Redis中的用户信息
+        val userJson: String = jedisClient.get(s"user:${saleDetail.user_id}")
+        //将用户信息补全到saleDetail
+        val userInfo: UserInfo = JSON.parseObject(userJson, classOf[UserInfo])
+        saleDetail.mergeUserInfo(userInfo)
+        //将saleDetail返回
+        saleDetail
+      })
+
+      //释放连接
+      jedisClient.close()
+
+      result
+    })
+
+
+    details.cache()
     //测试打印
-    orderInfoAndDetailDStream.print(100)
+    details.print()
+
+    //写入ES
+    details.foreachRDD(rdd => {
+
+      rdd.foreachPartition(iter => {
+        //转换结构
+        val idToSaleDetail: Iterator[(String, SaleDetail)] = iter.map(saleDetail => (s"${saleDetail.order_id}-${saleDetail.order_detail_id}", saleDetail))
+
+        MyEsUtil.insertBulk(GmallConstants.GMALL_SALE_DETAIL_INDEX, idToSaleDetail.toList)
+      })
+    })
 
     //启动任务
     ssc.start()
